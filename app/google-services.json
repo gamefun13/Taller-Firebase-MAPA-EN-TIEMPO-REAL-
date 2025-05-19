@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "502624451636",
+    "project_id": "userlocatorapp",
+    "storage_bucket": "userlocatorapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502624451636:android:d4f5cb9e76eff4c2265e61",
+        "android_client_info": {
+          "package_name": "com.example.userlocatorapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlO3Y7rzBr8QqAJTJEimYnH4jr8fJnuPc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
