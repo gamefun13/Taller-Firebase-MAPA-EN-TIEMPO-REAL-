@@ -35,7 +35,6 @@ fun MainMenuScreen(
             )
         }
     ) { padding ->
-        // Aquí puedes poner el mapa u otra vista principal
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(padding),

@@ -1,7 +1,10 @@
 package com.example.userlocatorapp
 
+import android.Manifest
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -13,9 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +58,33 @@ fun ProfileScreen(
                 }
                 .addOnFailureListener {
                     errorMessage = "Error subiendo la foto: ${it.message}"
+                }
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        bitmap?.let {
+            val uid = currentUser?.uid ?: return@let
+            val imageRef = storage.child("fotos/$uid.jpg")
+
+            val baos = ByteArrayOutputStream()
+            it.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            val data = baos.toByteArray()
+
+            imageRef.putBytes(data)
+                .continueWithTask { task ->
+                    if (!task.isSuccessful) throw task.exception ?: Exception("Error al subir imagen")
+                    imageRef.downloadUrl
+                }
+                .addOnSuccessListener { downloadUri ->
+                    db.collection("usuarios").document(uid)
+                        .update("foto", downloadUri.toString())
+                    successMessage = "Foto tomada y subida exitosamente"
+                }
+                .addOnFailureListener {
+                    errorMessage = "Error subiendo la foto tomada: ${it.message}"
                 }
         }
     }
@@ -160,6 +193,8 @@ fun ProfileScreen(
                 Text("Subir Foto de Perfil")
             }
 
+            CameraPermissionButton(cameraLauncher)
+
             if (successMessage.isNotEmpty()) {
                 Text(
                     successMessage,
@@ -176,5 +211,28 @@ fun ProfileScreen(
                 )
             }
         }
+    }
+}
+
+@OptIn(com.google.accompanist.permissions.ExperimentalPermissionsApi::class)
+@Composable
+fun CameraPermissionButton(
+    cameraLauncher: ActivityResultLauncher<Void?>
+) {
+    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
+
+    Button(
+        onClick = {
+            if (cameraPermissionState.status is PermissionStatus.Granted) {
+                cameraLauncher.launch(null)
+            } else {
+                cameraPermissionState.launchPermissionRequest()
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+    ) {
+        Text("Tomar Foto con Cámara")
     }
 }

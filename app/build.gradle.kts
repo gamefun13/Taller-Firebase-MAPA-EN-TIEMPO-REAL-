@@ -87,5 +87,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
     implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta")
+
 
 }
